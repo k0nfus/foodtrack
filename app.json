@@ -12,6 +12,12 @@
     "experiments": {
       "typedRoutes": true
     },
+    "splash": {
+      "image": "./assets/images/icon.png",
+      "backgroundColor": "#000000",
+      "resizeMode": "contain",
+      "duration": 0
+    },
     "plugins": [
       "expo-router",
       [

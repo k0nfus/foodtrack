@@ -12,7 +12,7 @@ import {
   Divider,
   useTheme,
 } from 'react-native-paper';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useFocusEffect, useRouter, useLocalSearchParams } from 'expo-router';
 import {
   getEntries,
   getDailyTotalKcal,
@@ -27,6 +27,10 @@ import { FoodEntry } from '@/types';
 
 export default function Index() {
   const router = useRouter();
+  const { date: dateParam, open } = useLocalSearchParams<{
+    date?: string;
+    open?: string;
+  }>();
   const theme = useTheme();
   const [selectedDate, setSelectedDate] = React.useState(
     new Date().toISOString().slice(0, 10),
@@ -45,6 +49,18 @@ export default function Index() {
   const [editIdx, setEditIdx] = React.useState<number | null>(null);
   const [editGrams, setEditGrams] = React.useState('');
   const [editKcal, setEditKcal] = React.useState('');
+  const [daysWithEntries, setDaysWithEntries] = React.useState<
+    Record<string, boolean>
+  >({});
+
+  React.useEffect(() => {
+    if (typeof dateParam === 'string') {
+      setSelectedDate(dateParam);
+      if (open === '1') {
+        setModalVisible(true);
+      }
+    }
+  }, [dateParam, open]);
 
   React.useEffect(() => {
     (async () => {
@@ -59,6 +75,10 @@ export default function Index() {
     (async () => {
       const e = await getEntries(selectedDate);
       setEntries(e);
+      setDaysWithEntries((prev) => ({
+        ...prev,
+        [selectedDate]: e.length > 0,
+      }));
       const t = await getDailyTotalKcal(selectedDate);
       setTotal(t);
       const w = await getWeightFor(selectedDate);
@@ -75,6 +95,23 @@ export default function Index() {
       }
     })();
   }, [selectedDate]);
+
+  React.useEffect(() => {
+    (async () => {
+      const record: Record<string, boolean> = {};
+      const year = currentMonth.getFullYear();
+      const month = currentMonth.getMonth();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr = new Date(year, month, d).toISOString().slice(0, 10);
+        const e = await getEntries(dateStr);
+        if (e.length > 0) {
+          record[dateStr] = true;
+        }
+      }
+      setDaysWithEntries(record);
+    })();
+  }, [currentMonth]);
 
   useFocusEffect(load);
 
@@ -172,7 +209,14 @@ export default function Index() {
   const displayDate = new Date(selectedDate).toLocaleDateString('de-DE');
 
   return (
-    <View style={{ flex: 1, padding: 16, backgroundColor: theme.colors.background }}>
+    <View
+      style={{
+        flex: 1,
+        padding: 16,
+        backgroundColor: theme.colors.background,
+        justifyContent: 'center',
+      }}
+    >
       <View style={{ marginBottom: 16 }}>
         <View
           style={{
@@ -219,6 +263,7 @@ export default function Index() {
               ? new Date(year, month, d).toISOString().slice(0, 10)
               : '';
             const selected = d && dateStr === selectedDate;
+            const hasEntries = d && daysWithEntries[dateStr];
             return (
               <TouchableOpacity
                 key={idx}
@@ -239,6 +284,8 @@ export default function Index() {
                     backgroundColor: selected
                       ? theme.colors.primary
                       : 'transparent',
+                    borderWidth: hasEntries ? 1 : 0,
+                    borderColor: theme.colors.primary,
                   }}
                 >
                   <Text
