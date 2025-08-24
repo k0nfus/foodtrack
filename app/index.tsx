@@ -1,6 +1,15 @@
 import React from 'react';
 import { View, FlatList, TouchableOpacity } from 'react-native';
-import { Button, IconButton, List, Text, TextInput, useTheme } from 'react-native-paper';
+import {
+  Button,
+  IconButton,
+  List,
+  Modal,
+  Portal,
+  Text,
+  TextInput,
+  useTheme,
+} from 'react-native-paper';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { getEntries, getDailyTotalKcal, getWeightFor, setWeight, getProfile } from '@/lib/storage';
 import { FoodEntry } from '@/types';
@@ -18,6 +27,7 @@ export default function Index() {
   const [entries, setEntries] = React.useState<FoodEntry[]>([]);
   const [total, setTotal] = React.useState(0);
   const [weight, setWeightState] = React.useState('');
+  const [modalVisible, setModalVisible] = React.useState(false);
 
   React.useEffect(() => {
     (async () => {
@@ -128,7 +138,12 @@ export default function Index() {
               <TouchableOpacity
                 key={idx}
                 style={{ width: `${100 / 7}%`, padding: 4 }}
-                onPress={() => d && setSelectedDate(dateStr)}
+                onPress={() => {
+                  if (d) {
+                    setSelectedDate(dateStr);
+                    setModalVisible(true);
+                  }
+                }}
               >
                 <View
                   style={{
@@ -156,37 +171,61 @@ export default function Index() {
           })}
         </View>
       </View>
-      <Text variant="headlineMedium" style={{ marginBottom: 16 }}>
-        {displayDate}: {total} kcal
-      </Text>
-      <FlatList
-        data={entries}
-        keyExtractor={(item, idx) => `${item.code}-${idx}`}
-        renderItem={renderItem}
-        ListEmptyComponent={<Text>Keine Einträge</Text>}
-      />
-      <TextInput
-        label="Gewicht (kg)"
-        value={weight}
-        onChangeText={setWeightState}
-        onBlur={saveWeight}
-        keyboardType="numeric"
-        style={{ marginTop: 16 }}
-      />
-      <Button
-        mode="contained"
-        style={{ marginTop: 16 }}
-        onPress={() => router.push({ pathname: '/search', params: { date: selectedDate } })}
-      >
-        Lebensmittel suchen
-      </Button>
-      <Button
-        mode="contained"
-        style={{ marginTop: 8 }}
-        onPress={() => router.push({ pathname: '/scan', params: { date: selectedDate } })}
-      >
-        Barcode scannen
-      </Button>
+      <Portal>
+        <Modal
+          visible={modalVisible}
+          onDismiss={() => setModalVisible(false)}
+          contentContainerStyle={{
+            backgroundColor: theme.colors.background,
+            padding: 16,
+            margin: 16,
+            borderRadius: 8,
+          }}
+        >
+          <Text variant="headlineMedium" style={{ marginBottom: 16 }}>
+            {displayDate}: {total} kcal
+          </Text>
+          <FlatList
+            data={entries}
+            keyExtractor={(item, idx) => `${item.code}-${idx}`}
+            renderItem={renderItem}
+            ListEmptyComponent={<Text>Keine Einträge</Text>}
+            style={{ maxHeight: 300 }}
+          />
+          <TextInput
+            label="Gewicht (kg)"
+            value={weight}
+            onChangeText={setWeightState}
+            onBlur={saveWeight}
+            keyboardType="numeric"
+            style={{ marginTop: 16 }}
+          />
+          <Button
+            icon="magnify"
+            mode="contained"
+            textColor="#fff"
+            style={{ marginTop: 16 }}
+            onPress={() => {
+              setModalVisible(false);
+              router.push({ pathname: '/search', params: { date: selectedDate } });
+            }}
+          >
+            Lebensmittel suchen
+          </Button>
+          <Button
+            icon="barcode"
+            mode="contained"
+            textColor="#fff"
+            style={{ marginTop: 8 }}
+            onPress={() => {
+              setModalVisible(false);
+              router.push({ pathname: '/scan', params: { date: selectedDate } });
+            }}
+          >
+            Barcode scannen
+          </Button>
+        </Modal>
+      </Portal>
     </View>
   );
 }
