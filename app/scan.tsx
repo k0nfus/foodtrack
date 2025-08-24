@@ -11,7 +11,9 @@ try {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   BarCodeScanner = require('expo-barcode-scanner').BarCodeScanner;
 } catch {
-  console.warn('expo-barcode-scanner module not found.');
+  console.warn(
+    'expo-barcode-scanner module not found. Install it with "npx expo install expo-barcode-scanner".',
+  );
 }
 
 export default function Scan() {
@@ -67,7 +69,10 @@ export default function Scan() {
       <View
         style={{ flex: 1, backgroundColor: theme.colors.background, justifyContent: 'center', alignItems: 'center' }}
       >
-        <Text>Barcode-Scannen wird auf dieser Plattform nicht unterstützt.</Text>
+        <Text>
+          Barcode-Scannen wird auf dieser Plattform nicht unterstützt. Installiere
+          das Paket expo-barcode-scanner.
+        </Text>
       </View>
     );
   }

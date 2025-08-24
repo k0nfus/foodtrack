@@ -10,6 +10,12 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    npm install
    ```
 
+   For barcode scanning support you may also need:
+
+   ```bash
+   npx expo install expo-barcode-scanner
+   ```
+
 2. Start the app
 
    ```bash
