@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, FlatList, TouchableOpacity } from 'react-native';
+import { View, FlatList, TouchableOpacity, PanResponder } from 'react-native';
 import {
   Button,
   IconButton,
@@ -38,6 +38,8 @@ export default function Index() {
   const [total, setTotal] = React.useState(0);
   const [weight, setWeightState] = React.useState('');
   const [modalVisible, setModalVisible] = React.useState(false);
+  const [weightDialog, setWeightDialog] = React.useState(false);
+  const [weightInput, setWeightInput] = React.useState('');
   const [bmr, setBmr] = React.useState(0);
   const [editIdx, setEditIdx] = React.useState<number | null>(null);
   const [editGrams, setEditGrams] = React.useState('');
@@ -76,9 +78,11 @@ export default function Index() {
   useFocusEffect(load);
 
   async function saveWeight() {
-    const num = parseFloat(weight);
+    const num = parseFloat(weightInput);
     if (!isNaN(num)) {
       await setWeight(selectedDate, num);
+      setWeightState(weightInput);
+      setWeightDialog(false);
       load();
     }
   }
@@ -131,6 +135,28 @@ export default function Index() {
       new Date(prev.getFullYear(), prev.getMonth() + offset, 1),
     );
   }
+
+  function changeDay(offset: number) {
+    const d = new Date(selectedDate);
+    d.setDate(d.getDate() + offset);
+    const dateStr = d.toISOString().slice(0, 10);
+    setSelectedDate(dateStr);
+    setCurrentMonth(new Date(d.getFullYear(), d.getMonth(), 1));
+  }
+
+  const panResponder = React.useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gesture) =>
+        Math.abs(gesture.dx) > Math.abs(gesture.dy) && Math.abs(gesture.dx) > 20,
+      onPanResponderRelease: (_, gesture) => {
+        if (gesture.dx > 50) {
+          changeDay(-1);
+        } else if (gesture.dx < -50) {
+          changeDay(1);
+        }
+      },
+    }),
+  ).current;
 
   const year = currentMonth.getFullYear();
   const month = currentMonth.getMonth();
@@ -238,53 +264,82 @@ export default function Index() {
             padding: 16,
           }}
         >
-          <Text variant="headlineMedium" style={{ marginBottom: 8 }}>
-            {displayDate}: {total} kcal
-          </Text>
-          <Text style={{ marginBottom: 8 }}>Grundumsatz: {bmr} kcal</Text>
-          <Text style={{ marginBottom: 16 }}>
-            Differenz: {total - bmr} kcal
-          </Text>
-          <FlatList
-            data={entries}
-            keyExtractor={(item, idx) => `${item.code}-${idx}`}
-            renderItem={renderItem}
-            ListEmptyComponent={<Text>Keine Einträge</Text>}
-            style={{ flex: 1 }}
-          />
-          <TextInput
-            label="Gewicht (kg)"
-            value={weight}
-            onChangeText={setWeightState}
-            onBlur={saveWeight}
-            keyboardType="numeric"
-            style={{ marginTop: 16 }}
-          />
-          <Button
-            icon="magnify"
-            mode="contained"
-            textColor="#fff"
-            style={{ marginTop: 16 }}
-            onPress={() => {
-              setModalVisible(false);
-              router.push({ pathname: '/search', params: { date: selectedDate } });
-            }}
-          >
-            Lebensmittel suchen
-          </Button>
-          <Button
-            icon="barcode"
-            mode="contained"
-            textColor="#fff"
-            style={{ marginTop: 8 }}
-            onPress={() => {
-              setModalVisible(false);
-              router.push({ pathname: '/scan', params: { date: selectedDate } });
-            }}
-          >
-            Barcode scannen
-          </Button>
+          <View style={{ flex: 1 }} {...panResponder.panHandlers}>
+            <Text
+              variant="headlineMedium"
+              style={{ marginBottom: 8, textAlign: 'center' }}
+            >
+              {displayDate}
+            </Text>
+            <Text style={{ marginBottom: 8, textAlign: 'center' }}>
+              Gesamt: {total} kcal
+            </Text>
+            <Text style={{ marginBottom: 8, textAlign: 'center' }}>
+              Grundumsatz: {bmr} kcal
+            </Text>
+            <Text style={{ marginBottom: 16, textAlign: 'center' }}>
+              Differenz: {total - bmr} kcal
+            </Text>
+            <FlatList
+              data={entries}
+              keyExtractor={(item, idx) => `${item.code}-${idx}`}
+              renderItem={renderItem}
+              ListEmptyComponent={<Text>Keine Einträge</Text>}
+              style={{ flex: 1 }}
+            />
+            <Text style={{ marginTop: 16, textAlign: 'center' }}>
+              Gewicht: {weight ? `${weight} kg` : '--'}
+            </Text>
+            <Button
+              icon="scale-bathroom"
+              mode="contained-tonal"
+              style={{ marginTop: 8, borderRadius: 24 }}
+              onPress={() => {
+                setWeightInput(weight);
+                setWeightDialog(true);
+              }}
+            >
+              Gewicht aktualisieren
+            </Button>
+            <Button
+              icon="magnify"
+              mode="contained-tonal"
+              style={{ marginTop: 16, borderRadius: 24 }}
+              onPress={() => {
+                setModalVisible(false);
+                router.push({ pathname: '/search', params: { date: selectedDate } });
+              }}
+            >
+              Lebensmittel suchen
+            </Button>
+            <Button
+              icon="barcode"
+              mode="contained-tonal"
+              style={{ marginTop: 8, borderRadius: 24 }}
+              onPress={() => {
+                setModalVisible(false);
+                router.push({ pathname: '/scan', params: { date: selectedDate } });
+              }}
+            >
+              Barcode scannen
+            </Button>
+          </View>
         </Modal>
+        <Dialog visible={weightDialog} onDismiss={() => setWeightDialog(false)}>
+          <Dialog.Title>Gewicht aktualisieren</Dialog.Title>
+          <Dialog.Content>
+            <TextInput
+              label="Gewicht (kg)"
+              value={weightInput}
+              onChangeText={setWeightInput}
+              keyboardType="numeric"
+            />
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setWeightDialog(false)}>Abbrechen</Button>
+            <Button onPress={saveWeight}>Speichern</Button>
+          </Dialog.Actions>
+        </Dialog>
         <Dialog visible={editIdx != null} onDismiss={() => setEditIdx(null)}>
           <Dialog.Title>Eintrag bearbeiten</Dialog.Title>
           <Dialog.Content>
