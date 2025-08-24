@@ -24,7 +24,7 @@
         }
       ],
       [
-        "expo-camera",
+        "expo-barcode-scanner",
         {
           "cameraPermission": "Kamerazugriff wird zum Scannen von Barcodes benötigt."
         }
