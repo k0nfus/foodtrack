@@ -1,7 +1,7 @@
 import React from 'react';
 import { View } from 'react-native';
-import { Button, Dialog, Portal, Text, TextInput } from 'react-native-paper';
-import { useRouter } from 'expo-router';
+import { Button, Dialog, Portal, Text, TextInput, useTheme } from 'react-native-paper';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { fetchProduct, calculateKcal, Product } from '@/lib/off';
 import { addEntry } from '@/lib/storage';
 
@@ -16,6 +16,10 @@ try {
 
 export default function Scan() {
   const router = useRouter();
+  const { date } = useLocalSearchParams<{ date?: string }>();
+  const entryDate =
+    typeof date === 'string' ? date : new Date().toISOString().slice(0, 10);
+  const theme = useTheme();
   const [hasPermission, setHasPermission] = React.useState<boolean | null>(null);
   const [scanned, setScanned] = React.useState(false);
   const [product, setProduct] = React.useState<Product | null>(null);
@@ -48,7 +52,7 @@ export default function Scan() {
     const g = parseFloat(grams);
     if (isNaN(g)) return;
     await addEntry({
-      date: new Date().toISOString().slice(0, 10),
+      date: entryDate,
       code: product.code,
       name: product.name,
       grams: g,
@@ -59,17 +63,29 @@ export default function Scan() {
   }
 
   if (!BarCodeScanner) {
-    return <Text>Barcode scanning is not supported on this platform.</Text>;
+    return (
+      <View
+        style={{ flex: 1, backgroundColor: theme.colors.background, justifyContent: 'center', alignItems: 'center' }}
+      >
+        <Text>Barcode-Scannen wird auf dieser Plattform nicht unterstützt.</Text>
+      </View>
+    );
   }
   if (hasPermission === null) {
-    return <View style={{ flex: 1 }} />;
+    return <View style={{ flex: 1, backgroundColor: theme.colors.background }} />;
   }
   if (hasPermission === false) {
-    return <Text>Keine Kameraberechtigung</Text>;
+    return (
+      <View
+        style={{ flex: 1, backgroundColor: theme.colors.background, justifyContent: 'center', alignItems: 'center' }}
+      >
+        <Text>Keine Kameraberechtigung</Text>
+      </View>
+    );
   }
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
       {!product && BarCodeScanner && (
         <BarCodeScanner
           onBarCodeScanned={handleBarCodeScanned}

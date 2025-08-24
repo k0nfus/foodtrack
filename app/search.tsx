@@ -1,12 +1,16 @@
 import React from 'react';
 import { View, FlatList } from 'react-native';
-import { Button, Dialog, List, Portal, TextInput } from 'react-native-paper';
-import { useRouter } from 'expo-router';
+import { Button, Dialog, List, Portal, TextInput, useTheme } from 'react-native-paper';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { searchProducts, calculateKcal, Product } from '@/lib/off';
 import { addEntry } from '@/lib/storage';
 
 export default function Search() {
   const router = useRouter();
+  const { date } = useLocalSearchParams<{ date?: string }>();
+  const entryDate =
+    typeof date === 'string' ? date : new Date().toISOString().slice(0, 10);
+  const theme = useTheme();
   const [query, setQuery] = React.useState('');
   const [results, setResults] = React.useState<Product[]>([]);
   const [selected, setSelected] = React.useState<Product | null>(null);
@@ -22,7 +26,7 @@ export default function Search() {
     const g = parseFloat(grams);
     if (isNaN(g)) return;
     await addEntry({
-      date: new Date().toISOString().slice(0, 10),
+      date: entryDate,
       code: selected.code,
       name: selected.name,
       grams: g,
@@ -33,7 +37,7 @@ export default function Search() {
   }
 
   return (
-    <View style={{ flex: 1, padding: 16 }}>
+    <View style={{ flex: 1, padding: 16, backgroundColor: theme.colors.background }}>
       <TextInput
         label="Suche"
         value={query}
