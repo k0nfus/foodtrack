@@ -1,4 +1,4 @@
-const BASE_URL = 'https://world.openfoodfacts.org/api/v2';
+const BASE_URL = 'https://openfoodfacts.org/data';
 const USER_AGENT = 'foodtrack-mvp/1.0';
 
 export interface Product {
