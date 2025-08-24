@@ -28,7 +28,7 @@ export function calculateKcal(grams: number, kcalPer100g: number): number {
 }
 
 export async function searchProducts(query: string): Promise<Product[]> {
-  const url = `${BASE_URL}/search?general_search=${encodeURIComponent(
+  const url = `${BASE_URL}/search?search_terms=${encodeURIComponent(
     query,
   )}&fields=code,product_name,nutriments&page_size=10&lc=de`;
   const res = await fetch(url, { headers: { 'User-Agent': USER_AGENT } });
