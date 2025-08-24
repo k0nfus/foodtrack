@@ -5,7 +5,7 @@ export interface Profile {
   gender: string;
   heightCm: number;
   weightKgInitial: number;
-  age: number;
+  birthDate: string; // YYYY-MM-DD
   goalWeightKg: number;
 }
 
@@ -27,7 +27,14 @@ export async function saveProfile(profile: Profile): Promise<void> {
 
 export async function getProfile(): Promise<Profile | null> {
   const data = await AsyncStorage.getItem(PROFILE_KEY);
-  return data ? (JSON.parse(data) as Profile) : null;
+  if (!data) return null;
+  const parsed = JSON.parse(data) as any;
+  if (!parsed.birthDate) {
+    parsed.birthDate = '1985-01-16';
+    delete parsed.age;
+    await AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(parsed));
+  }
+  return parsed as Profile;
 }
 
 async function getAllEntries(): Promise<FoodEntry[]> {

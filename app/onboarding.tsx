@@ -12,16 +12,24 @@ export default function Onboarding() {
   const [genderMenuVisible, setGenderMenuVisible] = React.useState(false);
   const [height, setHeight] = React.useState('');
   const [weight, setWeightInput] = React.useState('');
-  const [age, setAge] = React.useState('');
+  const [birthDate, setBirthDate] = React.useState('');
   const [goal, setGoal] = React.useState('');
 
   async function save() {
+    let birthIso = '1985-01-16';
+    const parts = birthDate.split('.');
+    if (parts.length === 3) {
+      const [day, month, year] = parts;
+      if (day && month && year) {
+        birthIso = `${year.padStart(4, '0')}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+      }
+    }
     const profile = {
       name,
       gender,
       heightCm: parseFloat(height),
       weightKgInitial: parseFloat(weight),
-      age: parseInt(age, 10),
+      birthDate: birthIso,
       goalWeightKg: parseFloat(goal),
     };
     await saveProfile(profile);
@@ -77,7 +85,13 @@ export default function Onboarding() {
       </Menu>
       <TextInput label="Größe (cm)" value={height} onChangeText={setHeight} keyboardType="numeric" style={{ marginBottom: 12 }} />
       <TextInput label="Gewicht (kg)" value={weight} onChangeText={setWeightInput} keyboardType="numeric" style={{ marginBottom: 12 }} />
-      <TextInput label="Alter" value={age} onChangeText={setAge} keyboardType="numeric" style={{ marginBottom: 12 }} />
+      <TextInput
+        label="Geburtsdatum (TT.MM.JJJJ)"
+        value={birthDate}
+        onChangeText={setBirthDate}
+        keyboardType="numeric"
+        style={{ marginBottom: 12 }}
+      />
       <TextInput label="Zielgewicht (kg)" value={goal} onChangeText={setGoal} keyboardType="numeric" style={{ marginBottom: 12 }} />
       <Button mode="contained" onPress={save}>
         Speichern

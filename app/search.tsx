@@ -33,7 +33,7 @@ export default function Search() {
       kcal: calculateKcal(g, selected.kcal100),
     });
     setSelected(null);
-    router.back();
+    router.replace({ pathname: '/', params: { date: entryDate, open: '1' } });
   }
 
   return (
