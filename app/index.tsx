@@ -6,12 +6,22 @@ import {
   List,
   Modal,
   Portal,
+  Dialog,
   Text,
   TextInput,
   useTheme,
 } from 'react-native-paper';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { getEntries, getDailyTotalKcal, getWeightFor, setWeight, getProfile } from '@/lib/storage';
+import {
+  getEntries,
+  getDailyTotalKcal,
+  getWeightFor,
+  setWeight,
+  getProfile,
+  removeEntry,
+  updateEntry,
+} from '@/lib/storage';
+import { calculateBMR } from '@/lib/bmr';
 import { FoodEntry } from '@/types';
 
 export default function Index() {
@@ -28,6 +38,10 @@ export default function Index() {
   const [total, setTotal] = React.useState(0);
   const [weight, setWeightState] = React.useState('');
   const [modalVisible, setModalVisible] = React.useState(false);
+  const [bmr, setBmr] = React.useState(0);
+  const [editIdx, setEditIdx] = React.useState<number | null>(null);
+  const [editGrams, setEditGrams] = React.useState('');
+  const [editKcal, setEditKcal] = React.useState('');
 
   React.useEffect(() => {
     (async () => {
@@ -50,6 +64,12 @@ export default function Index() {
       } else {
         setWeightState('');
       }
+      const profile = await getProfile();
+      if (profile && w != null) {
+        setBmr(calculateBMR(profile, w));
+      } else {
+        setBmr(0);
+      }
     })();
   }, [selectedDate]);
 
@@ -59,15 +79,52 @@ export default function Index() {
     const num = parseFloat(weight);
     if (!isNaN(num)) {
       await setWeight(selectedDate, num);
+      load();
     }
   }
 
-  const renderItem = ({ item }: { item: FoodEntry }) => (
+  const renderItem = ({ item, index }: { item: FoodEntry; index: number }) => (
     <List.Item
       title={item.name}
       description={`${item.grams} g • ${item.kcal} kcal`}
+      right={() => (
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <IconButton
+            icon="pencil"
+            onPress={() => {
+              setEditIdx(index);
+              setEditGrams(String(item.grams));
+              setEditKcal(String(item.kcal));
+            }}
+          />
+          <IconButton
+            icon="delete"
+            iconColor={theme.colors.error}
+            onPress={() => handleDelete(index)}
+          />
+        </View>
+      )}
     />
   );
+
+  async function handleDelete(idx: number) {
+    await removeEntry(selectedDate, idx);
+    load();
+  }
+
+  async function saveEdit() {
+    if (editIdx == null) return;
+    const g = parseFloat(editGrams);
+    const k = parseFloat(editKcal);
+    if (isNaN(g) || isNaN(k)) return;
+    await updateEntry(selectedDate, editIdx, {
+      ...entries[editIdx],
+      grams: g,
+      kcal: k,
+    });
+    setEditIdx(null);
+    load();
+  }
 
   function changeMonth(offset: number) {
     setCurrentMonth((prev) =>
@@ -176,21 +233,24 @@ export default function Index() {
           visible={modalVisible}
           onDismiss={() => setModalVisible(false)}
           contentContainerStyle={{
+            flex: 1,
             backgroundColor: theme.colors.background,
             padding: 16,
-            margin: 16,
-            borderRadius: 8,
           }}
         >
-          <Text variant="headlineMedium" style={{ marginBottom: 16 }}>
+          <Text variant="headlineMedium" style={{ marginBottom: 8 }}>
             {displayDate}: {total} kcal
+          </Text>
+          <Text style={{ marginBottom: 8 }}>Grundumsatz: {bmr} kcal</Text>
+          <Text style={{ marginBottom: 16 }}>
+            Differenz: {total - bmr} kcal
           </Text>
           <FlatList
             data={entries}
             keyExtractor={(item, idx) => `${item.code}-${idx}`}
             renderItem={renderItem}
             ListEmptyComponent={<Text>Keine Einträge</Text>}
-            style={{ maxHeight: 300 }}
+            style={{ flex: 1 }}
           />
           <TextInput
             label="Gewicht (kg)"
@@ -225,6 +285,28 @@ export default function Index() {
             Barcode scannen
           </Button>
         </Modal>
+        <Dialog visible={editIdx != null} onDismiss={() => setEditIdx(null)}>
+          <Dialog.Title>Eintrag bearbeiten</Dialog.Title>
+          <Dialog.Content>
+            <TextInput
+              label="Gramm"
+              value={editGrams}
+              onChangeText={setEditGrams}
+              keyboardType="numeric"
+            />
+            <TextInput
+              label="kcal"
+              value={editKcal}
+              onChangeText={setEditKcal}
+              keyboardType="numeric"
+              style={{ marginTop: 8 }}
+            />
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setEditIdx(null)}>Abbrechen</Button>
+            <Button onPress={saveEdit}>Speichern</Button>
+          </Dialog.Actions>
+        </Dialog>
       </Portal>
     </View>
   );

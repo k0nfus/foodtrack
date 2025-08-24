@@ -41,6 +41,38 @@ export async function addEntry(entry: FoodEntry): Promise<void> {
   await AsyncStorage.setItem(ENTRIES_KEY, JSON.stringify(entries));
 }
 
+export async function updateEntry(
+  date: string,
+  idx: number,
+  entry: FoodEntry,
+): Promise<void> {
+  const entries = await getAllEntries();
+  let count = -1;
+  for (let i = 0; i < entries.length; i++) {
+    if (entries[i].date === date) {
+      count++;
+      if (count === idx) {
+        entries[i] = entry;
+        break;
+      }
+    }
+  }
+  await AsyncStorage.setItem(ENTRIES_KEY, JSON.stringify(entries));
+}
+
+export async function removeEntry(date: string, idx: number): Promise<void> {
+  const entries = await getAllEntries();
+  let count = -1;
+  const filtered = entries.filter((e) => {
+    if (e.date === date) {
+      count++;
+      return count !== idx;
+    }
+    return true;
+  });
+  await AsyncStorage.setItem(ENTRIES_KEY, JSON.stringify(filtered));
+}
+
 export async function getEntries(date: string): Promise<FoodEntry[]> {
   const entries = await getAllEntries();
   return entries.filter((e) => e.date === date);
