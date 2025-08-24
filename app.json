@@ -15,15 +15,6 @@
     "plugins": [
       "expo-router",
       [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
-        }
-      ],
-      [
         "expo-barcode-scanner",
         {
           "cameraPermission": "Kamerazugriff wird zum Scannen von Barcodes benötigt."
