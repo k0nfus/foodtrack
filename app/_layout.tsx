@@ -1,29 +1,21 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
-
+import { PaperProvider } from 'react-native-paper';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { darkTheme, lightTheme } from '@/theme';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
-
-  if (!loaded) {
-    // Async font loading only occurs in development.
-    return null;
-  }
-
+  const scheme = useColorScheme();
+  const theme = scheme === 'dark' ? darkTheme : lightTheme;
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <PaperProvider theme={theme}>
+      <SafeAreaProvider>
+        <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
+          <Stack screenOptions={{ headerShown: false }} />
+          <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+        </SafeAreaView>
+      </SafeAreaProvider>
+    </PaperProvider>
   );
 }
