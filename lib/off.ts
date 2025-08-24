@@ -1,5 +1,10 @@
-const BASE_URL = 'https://openfoodfacts.org/data';
 const USER_AGENT = 'foodtrack-mvp/1.0';
+
+function getBaseUrl(category: 'Food' | 'Beauty' = 'Food'): string {
+  return category === 'Food'
+    ? 'https://world.openfoodfacts.org'
+    : 'https://world.openbeautyfacts.org';
+}
 
 export interface Product {
   code: string;
@@ -27,10 +32,14 @@ export function calculateKcal(grams: number, kcalPer100g: number): number {
   return Math.round((grams * kcalPer100g) / 100);
 }
 
-export async function searchProducts(query: string): Promise<Product[]> {
-  const url = `${BASE_URL}/search?search_terms=${encodeURIComponent(
-    query,
-  )}&fields=code,product_name,nutriments&page_size=10&lc=de`;
+export async function searchProducts(
+  query: string,
+  category: 'Food' | 'Beauty' = 'Food',
+): Promise<Product[]> {
+  const base = getBaseUrl(category);
+  const url =
+    `${base}/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&json=1` +
+    '&fields=code,product_name,nutriments&page_size=10&lc=de';
   const res = await fetch(url, { headers: { 'User-Agent': USER_AGENT } });
   const json = await res.json();
   return (json.products || []).map((p: OFFProduct) => ({
@@ -40,8 +49,12 @@ export async function searchProducts(query: string): Promise<Product[]> {
   }));
 }
 
-export async function fetchProduct(barcode: string): Promise<Product | null> {
-  const url = `${BASE_URL}/product/${barcode}?fields=code,product_name,nutriments&lc=de`;
+export async function fetchProduct(
+  barcode: string,
+  category: 'Food' | 'Beauty' = 'Food',
+): Promise<Product | null> {
+  const base = getBaseUrl(category);
+  const url = `${base}/api/v0/product/${barcode}.json`;
   const res = await fetch(url, { headers: { 'User-Agent': USER_AGENT } });
   const json = await res.json();
   const p: OFFProduct | undefined = json.product;
