@@ -1,10 +1,18 @@
 import React from 'react';
 import { View } from 'react-native';
-import { BarCodeScanner } from 'expo-barcode-scanner';
 import { Button, Dialog, Portal, Text, TextInput } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { fetchProduct, calculateKcal, Product } from '@/lib/off';
 import { addEntry } from '@/lib/storage';
+
+let BarCodeScanner: typeof import('expo-barcode-scanner').BarCodeScanner | null = null;
+try {
+  // Dynamic require so the app can run even if the native module is missing.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  BarCodeScanner = require('expo-barcode-scanner').BarCodeScanner;
+} catch {
+  console.warn('expo-barcode-scanner module not found.');
+}
 
 export default function Scan() {
   const router = useRouter();
@@ -14,6 +22,10 @@ export default function Scan() {
   const [grams, setGrams] = React.useState('');
 
   React.useEffect(() => {
+    if (!BarCodeScanner) {
+      setHasPermission(false);
+      return;
+    }
     (async () => {
       const { status } = await BarCodeScanner.requestPermissionsAsync();
       setHasPermission(status === 'granted');
@@ -46,6 +58,9 @@ export default function Scan() {
     router.back();
   }
 
+  if (!BarCodeScanner) {
+    return <Text>Barcode scanning is not supported on this platform.</Text>;
+  }
   if (hasPermission === null) {
     return <View style={{ flex: 1 }} />;
   }
@@ -55,7 +70,7 @@ export default function Scan() {
 
   return (
     <View style={{ flex: 1 }}>
-      {!product && (
+      {!product && BarCodeScanner && (
         <BarCodeScanner
           onBarCodeScanned={handleBarCodeScanned}
           style={{ flex: 1 }}
