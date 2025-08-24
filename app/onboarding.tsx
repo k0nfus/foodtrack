@@ -1,11 +1,12 @@
 import React from 'react';
 import { ScrollView } from 'react-native';
-import { Button, TextInput } from 'react-native-paper';
+import { Button, TextInput, useTheme } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { saveProfile, setWeight } from '@/lib/storage';
 
 export default function Onboarding() {
   const router = useRouter();
+  const theme = useTheme();
   const [name, setName] = React.useState('');
   const [gender, setGender] = React.useState('');
   const [height, setHeight] = React.useState('');
@@ -32,7 +33,10 @@ export default function Onboarding() {
   }
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 16 }}>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: theme.colors.background }}
+      contentContainerStyle={{ padding: 16 }}
+    >
       <TextInput label="Name" value={name} onChangeText={setName} style={{ marginBottom: 12 }} />
       <TextInput label="Geschlecht" value={gender} onChangeText={setGender} style={{ marginBottom: 12 }} />
       <TextInput label="Größe (cm)" value={height} onChangeText={setHeight} keyboardType="numeric" style={{ marginBottom: 12 }} />

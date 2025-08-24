@@ -28,7 +28,9 @@ export function calculateKcal(grams: number, kcalPer100g: number): number {
 }
 
 export async function searchProducts(query: string): Promise<Product[]> {
-  const url = `${BASE_URL}/search?general_search=${encodeURIComponent(query)}&fields=code,product_name,nutriments&page_size=10`;
+  const url = `${BASE_URL}/search?general_search=${encodeURIComponent(
+    query,
+  )}&fields=code,product_name,nutriments&page_size=10&lc=de`;
   const res = await fetch(url, { headers: { 'User-Agent': USER_AGENT } });
   const json = await res.json();
   return (json.products || []).map((p: OFFProduct) => ({
@@ -39,7 +41,7 @@ export async function searchProducts(query: string): Promise<Product[]> {
 }
 
 export async function fetchProduct(barcode: string): Promise<Product | null> {
-  const url = `${BASE_URL}/product/${barcode}?fields=code,product_name,nutriments`;
+  const url = `${BASE_URL}/product/${barcode}?fields=code,product_name,nutriments&lc=de`;
   const res = await fetch(url, { headers: { 'User-Agent': USER_AGENT } });
   const json = await res.json();
   const p: OFFProduct | undefined = json.product;
