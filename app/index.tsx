@@ -9,6 +9,7 @@ import {
   Dialog,
   Text,
   TextInput,
+  Divider,
   useTheme,
 } from 'react-native-paper';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -137,11 +138,12 @@ export default function Index() {
   }
 
   function changeDay(offset: number) {
-    const d = new Date(selectedDate);
-    d.setDate(d.getDate() + offset);
-    const dateStr = d.toISOString().slice(0, 10);
-    setSelectedDate(dateStr);
-    setCurrentMonth(new Date(d.getFullYear(), d.getMonth(), 1));
+    setSelectedDate((prev) => {
+      const d = new Date(prev);
+      d.setDate(d.getDate() + offset);
+      setCurrentMonth(new Date(d.getFullYear(), d.getMonth(), 1));
+      return d.toISOString().slice(0, 10);
+    });
   }
 
   const panResponder = React.useRef(
@@ -267,19 +269,46 @@ export default function Index() {
           <View style={{ flex: 1 }} {...panResponder.panHandlers}>
             <Text
               variant="headlineMedium"
-              style={{ marginBottom: 8, textAlign: 'center' }}
+              style={{ marginBottom: 4, textAlign: 'center' }}
             >
               {displayDate}
             </Text>
-            <Text style={{ marginBottom: 8, textAlign: 'center' }}>
-              Gesamt: {total} kcal
-            </Text>
-            <Text style={{ marginBottom: 8, textAlign: 'center' }}>
-              Grundumsatz: {bmr} kcal
-            </Text>
             <Text style={{ marginBottom: 16, textAlign: 'center' }}>
-              Differenz: {total - bmr} kcal
+              Gewicht: {weight ? `${weight} kg` : '--'}
             </Text>
+            <View style={{ marginHorizontal: 16, marginBottom: 16 }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  marginBottom: 4,
+                }}
+              >
+                <Text>Grundumsatz</Text>
+                <Text style={{ textAlign: 'right' }}>{bmr} kcal</Text>
+              </View>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  marginBottom: 4,
+                }}
+              >
+                <Text>Gesamt</Text>
+                <Text style={{ textAlign: 'right' }}>{total} kcal</Text>
+              </View>
+              <Divider style={{ marginVertical: 4 }} />
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  marginBottom: 4,
+                }}
+              >
+                <Text>Differenz</Text>
+                <Text style={{ textAlign: 'right' }}>{total - bmr} kcal</Text>
+              </View>
+            </View>
             <FlatList
               data={entries}
               keyExtractor={(item, idx) => `${item.code}-${idx}`}
@@ -287,42 +316,39 @@ export default function Index() {
               ListEmptyComponent={<Text>Keine Einträge</Text>}
               style={{ flex: 1 }}
             />
-            <Text style={{ marginTop: 16, textAlign: 'center' }}>
-              Gewicht: {weight ? `${weight} kg` : '--'}
-            </Text>
-            <Button
-              icon="scale-bathroom"
-              mode="contained-tonal"
-              style={{ marginTop: 8, borderRadius: 24 }}
-              onPress={() => {
-                setWeightInput(weight);
-                setWeightDialog(true);
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                marginTop: 16,
+                marginHorizontal: 16,
               }}
             >
-              Gewicht aktualisieren
-            </Button>
-            <Button
-              icon="magnify"
-              mode="contained-tonal"
-              style={{ marginTop: 16, borderRadius: 24 }}
-              onPress={() => {
-                setModalVisible(false);
-                router.push({ pathname: '/search', params: { date: selectedDate } });
-              }}
-            >
-              Lebensmittel suchen
-            </Button>
-            <Button
-              icon="barcode"
-              mode="contained-tonal"
-              style={{ marginTop: 8, borderRadius: 24 }}
-              onPress={() => {
-                setModalVisible(false);
-                router.push({ pathname: '/scan', params: { date: selectedDate } });
-              }}
-            >
-              Barcode scannen
-            </Button>
+              <IconButton
+                icon="scale-bathroom"
+                mode="contained-tonal"
+                onPress={() => {
+                  setWeightInput(weight);
+                  setWeightDialog(true);
+                }}
+              />
+              <IconButton
+                icon="magnify"
+                mode="contained-tonal"
+                onPress={() => {
+                  setModalVisible(false);
+                  router.push({ pathname: '/search', params: { date: selectedDate } });
+                }}
+              />
+              <IconButton
+                icon="barcode"
+                mode="contained-tonal"
+                onPress={() => {
+                  setModalVisible(false);
+                  router.push({ pathname: '/scan', params: { date: selectedDate } });
+                }}
+              />
+            </View>
           </View>
         </Modal>
         <Dialog visible={weightDialog} onDismiss={() => setWeightDialog(false)}>
