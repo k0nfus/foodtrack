@@ -15,6 +15,7 @@ export interface FoodEntry {
   name: string;
   grams: number;
   kcal: number;
+  mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
 }
 
 const PROFILE_KEY = 'profile';
@@ -82,7 +83,12 @@ export async function removeEntry(date: string, idx: number): Promise<void> {
 
 export async function getEntries(date: string): Promise<FoodEntry[]> {
   const entries = await getAllEntries();
-  return entries.filter((e) => e.date === date);
+  return entries
+    .filter((e) => e.date === date)
+    .map((e) => ({
+      ...e,
+      mealType: e.mealType ?? 'snack',
+    }));
 }
 
 export async function getDailyTotalKcal(date: string): Promise<number> {

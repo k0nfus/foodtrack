@@ -7,9 +7,13 @@ import { addEntry } from '@/lib/storage';
 
 export default function Search() {
   const router = useRouter();
-  const { date } = useLocalSearchParams<{ date?: string }>();
+  const { date, meal } = useLocalSearchParams<{ date?: string; meal?: string }>();
   const entryDate =
     typeof date === 'string' ? date : new Date().toISOString().slice(0, 10);
+  const mealType =
+    meal === 'breakfast' || meal === 'lunch' || meal === 'dinner' || meal === 'snack'
+      ? meal
+      : 'snack';
   const theme = useTheme();
   const [query, setQuery] = React.useState('');
   const [results, setResults] = React.useState<Product[]>([]);
@@ -31,6 +35,7 @@ export default function Search() {
       name: selected.name,
       grams: g,
       kcal: calculateKcal(g, selected.kcal100),
+      mealType,
     });
     setSelected(null);
     router.replace({ pathname: '/', params: { date: entryDate, open: '1' } });

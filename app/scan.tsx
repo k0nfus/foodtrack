@@ -18,9 +18,13 @@ try {
 
 export default function Scan() {
   const router = useRouter();
-  const { date } = useLocalSearchParams<{ date?: string }>();
+  const { date, meal } = useLocalSearchParams<{ date?: string; meal?: string }>();
   const entryDate =
     typeof date === 'string' ? date : new Date().toISOString().slice(0, 10);
+  const mealType =
+    meal === 'breakfast' || meal === 'lunch' || meal === 'dinner' || meal === 'snack'
+      ? meal
+      : 'snack';
   const theme = useTheme();
   const [hasPermission, setHasPermission] = React.useState<boolean | null>(null);
   const [scanned, setScanned] = React.useState(false);
@@ -59,9 +63,10 @@ export default function Scan() {
       name: product.name,
       grams: g,
       kcal: calculateKcal(g, product.kcal100),
+      mealType,
     });
     setProduct(null);
-    router.back();
+    router.replace({ pathname: '/', params: { date: entryDate, open: '1' } });
   }
 
   if (!BarCodeScanner) {
