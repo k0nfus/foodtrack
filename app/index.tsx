@@ -475,10 +475,19 @@ export default function Index() {
             </View>
           </View>
         </Modal>
-        <Dialog visible={addDialog} onDismiss={() => setAddDialog(false)}>
-          <Dialog.Title>Neuer Eintrag</Dialog.Title>
-          <Dialog.Content>
+        <Modal
+          visible={addDialog}
+          onDismiss={() => setAddDialog(false)}
+          contentContainerStyle={{
+            flex: 1,
+            backgroundColor: theme.colors.background,
+            padding: 16,
+          }}
+        >
+          <View style={{ flex: 1 }}>
+            <Text variant="titleLarge">Neuer Eintrag</Text>
             <SegmentedButtons
+              style={{ marginTop: 16 }}
               value={mealType}
               onValueChange={(v) =>
                 setMealType(v as 'breakfast' | 'lunch' | 'dinner' | 'snack')
@@ -516,7 +525,7 @@ export default function Index() {
                 }}
               />
             </View>
-            <ScrollView style={{ maxHeight: 200, marginTop: 16 }}>
+            <ScrollView style={{ flex: 1, marginTop: 16 }}>
               {results.map((item) => (
                 <List.Item
                   key={item.code}
@@ -529,11 +538,9 @@ export default function Index() {
                 />
               ))}
             </ScrollView>
-          </Dialog.Content>
-          <Dialog.Actions>
             <Button onPress={() => setAddDialog(false)}>Schließen</Button>
-          </Dialog.Actions>
-        </Dialog>
+          </View>
+        </Modal>
         <Dialog
           visible={!!selectedProduct}
           onDismiss={() => setSelectedProduct(null)}
