@@ -7,6 +7,7 @@ export const darkTheme = {
     primary: '#ff8c1a',
     secondary: '#ff8c1a',
     background: '#0d0f14',
+    error: '#ff1744',
   },
 };
 
@@ -16,6 +17,7 @@ export const lightTheme = {
     ...MD3LightTheme.colors,
     primary: '#ff8c1a',
     secondary: '#ff8c1a',
+    error: '#ff1744',
   },
 };
 
