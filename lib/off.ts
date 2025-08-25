@@ -1,5 +1,16 @@
 const USER_AGENT = 'foodtrack-mvp/1.0';
 
+// In browsers the User-Agent header is restricted and adding it triggers a
+// CORS preflight request which the Open Food Facts API does not answer with the
+// required headers. Only set the header when running in a non-browser
+// environment (e.g. during server side rendering) where it is allowed.
+function fetchOFF(url: string): Promise<Response> {
+  if (typeof navigator === 'undefined') {
+    return fetch(url, { headers: { 'User-Agent': USER_AGENT } });
+  }
+  return fetch(url);
+}
+
 function getBaseUrl(category: 'Food' | 'Beauty' = 'Food'): string {
   return category === 'Food'
     ? 'https://world.openfoodfacts.org'
@@ -40,13 +51,18 @@ export async function searchProducts(
   const url =
     `${base}/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&json=1` +
     '&fields=code,product_name,nutriments&page_size=10&lc=de';
-  const res = await fetch(url, { headers: { 'User-Agent': USER_AGENT } });
-  const json = await res.json();
-  return (json.products || []).map((p: OFFProduct) => ({
-    code: p.code,
-    name: p.product_name,
-    kcal100: kcalFromNutriments(p.nutriments) ?? 0,
-  }));
+  try {
+    const res = await fetchOFF(url);
+    const json = await res.json();
+    return (json.products || []).map((p: OFFProduct) => ({
+      code: p.code,
+      name: p.product_name,
+      kcal100: kcalFromNutriments(p.nutriments) ?? 0,
+    }));
+  } catch (e) {
+    console.error('Failed to search products', e);
+    return [];
+  }
 }
 
 export async function fetchProduct(
@@ -55,15 +71,20 @@ export async function fetchProduct(
 ): Promise<Product | null> {
   const base = getBaseUrl(category);
   const url = `${base}/api/v0/product/${barcode}.json`;
-  const res = await fetch(url, { headers: { 'User-Agent': USER_AGENT } });
-  const json = await res.json();
-  const p: OFFProduct | undefined = json.product;
-  if (!p || !p.product_name) {
+  try {
+    const res = await fetchOFF(url);
+    const json = await res.json();
+    const p: OFFProduct | undefined = json.product;
+    if (!p || !p.product_name) {
+      return null;
+    }
+    return {
+      code: p.code,
+      name: p.product_name,
+      kcal100: kcalFromNutriments(p.nutriments) ?? 0,
+    };
+  } catch (e) {
+    console.error('Failed to fetch product', e);
     return null;
   }
-  return {
-    code: p.code,
-    name: p.product_name,
-    kcal100: kcalFromNutriments(p.nutriments) ?? 0,
-  };
 }
