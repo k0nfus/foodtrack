@@ -2,8 +2,8 @@ const USER_AGENT = 'foodtrack-mvp/1.0';
 
 function getBaseUrl(category: 'Food' | 'Beauty' = 'Food'): string {
   return category === 'Food'
-    ? 'https://world.openfoodfacts.org'
-    : 'https://world.openbeautyfacts.org';
+    ? 'https://world.openfoodfacts.net'
+    : 'https://world.openbeautyfacts.net';
 }
 
 export interface Product {
