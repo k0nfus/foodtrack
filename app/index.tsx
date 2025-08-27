@@ -499,30 +499,13 @@ export default function Index() {
                 { value: 'snack', label: 'Snack' },
               ]}
             />
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                marginTop: 16,
-              }}
-            >
+            <View style={{ marginTop: 16 }}>
               <TextInput
-                style={{ flex: 1 }}
                 label="Suche"
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 onSubmitEditing={performSearch}
                 right={<TextInput.Icon icon="magnify" onPress={performSearch} />}
-              />
-              <IconButton
-                icon="barcode"
-                onPress={() => {
-                  setAddDialog(false);
-                  router.push({
-                    pathname: '/scan',
-                    params: { date: selectedDate, meal: mealType },
-                  });
-                }}
               />
             </View>
             <ScrollView style={{ flex: 1, marginTop: 16 }}>

@@ -18,22 +18,13 @@
       "resizeMode": "contain",
       "duration": 0
     },
-    "plugins": [
-      "expo-router",
-      [
-        "expo-barcode-scanner",
-        {
-          "cameraPermission": "Kamerazugriff wird zum Scannen von Barcodes benötigt."
-        }
-      ]
-    ],
+    "plugins": ["expo-router"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "org.systemkritisch.foodtrack"
     },
     "android": {
       "package": "org.systemkritisch.foodtrack",
-      "permissions": ["CAMERA"],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
