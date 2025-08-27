@@ -49,6 +49,9 @@ export default function Search() {
         onChangeText={setQuery}
         onSubmitEditing={performSearch}
         right={<TextInput.Icon icon="magnify" onPress={performSearch} />}
+        autoCorrect={false}
+        autoCapitalize="none"
+        autoComplete="off"
       />
       <FlatList
         data={results}
