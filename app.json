@@ -8,7 +8,9 @@
     "scheme": "foodtrack",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "experiments": {
       "typedRoutes": true
     },
@@ -25,6 +27,13 @@
     },
     "android": {
       "package": "org.systemkritisch.foodtrack",
+<<<<<<< HEAD
+=======
+      "permissions": [
+        "CAMERA",
+        "android.permission.CAMERA"
+      ],
+>>>>>>> 4ce1aec (eas)
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -35,6 +44,12 @@
       "bundler": "metro",
       "output": "static",
       "favicon": "./assets/images/favicon.png"
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "e42b39aa-192a-41f9-9ecc-d5fbf2caa3e1"
+      }
     }
   }
 }
