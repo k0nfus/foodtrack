@@ -11,10 +11,12 @@ function fetchOFF(url: string): Promise<Response> {
   return fetch(url);
 }
 
+// The `.net` domains return the proper CORS headers required for browser
+// requests while the `.org` domains do not.
 function getBaseUrl(category: 'Food' | 'Beauty' = 'Food'): string {
   return category === 'Food'
-    ? 'https://world.openfoodfacts.org'
-    : 'https://world.openbeautyfacts.org';
+    ? 'https://world.openfoodfacts.net'
+    : 'https://world.openbeautyfacts.net';
 }
 
 export interface Product {
