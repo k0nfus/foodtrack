@@ -27,13 +27,10 @@
     },
     "android": {
       "package": "org.systemkritisch.foodtrack",
-<<<<<<< HEAD
-=======
       "permissions": [
         "CAMERA",
         "android.permission.CAMERA"
       ],
->>>>>>> 4ce1aec (eas)
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
