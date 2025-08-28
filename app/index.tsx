@@ -30,9 +30,8 @@ import { FoodEntry } from '@/types';
 
 export default function Index() {
   const router = useRouter();
-  const { date: dateParam, open } = useLocalSearchParams<{
+  const { date: dateParam } = useLocalSearchParams<{
     date?: string;
-    open?: string;
   }>();
   const theme = useTheme();
   const [selectedDate, setSelectedDate] = React.useState(
@@ -45,7 +44,6 @@ export default function Index() {
   const [entries, setEntries] = React.useState<FoodEntry[]>([]);
   const [total, setTotal] = React.useState(0);
   const [weight, setWeightState] = React.useState('');
-  const [modalVisible, setModalVisible] = React.useState(false);
   const [weightDialog, setWeightDialog] = React.useState(false);
   const [weightInput, setWeightInput] = React.useState('');
   const [bmr, setBmr] = React.useState(0);
@@ -68,11 +66,8 @@ export default function Index() {
   React.useEffect(() => {
     if (typeof dateParam === 'string') {
       setSelectedDate(dateParam);
-      if (open === '1') {
-        setModalVisible(true);
-      }
     }
-  }, [dateParam, open]);
+  }, [dateParam]);
 
   React.useEffect(() => {
     (async () => {
@@ -291,7 +286,6 @@ export default function Index() {
         flex: 1,
         padding: 16,
         backgroundColor: theme.colors.background,
-        justifyContent: 'center',
       }}
     >
       <View style={{ marginBottom: 16 }}>
@@ -348,7 +342,6 @@ export default function Index() {
                 onPress={() => {
                   if (d) {
                     setSelectedDate(dateStr);
-                    setModalVisible(true);
                   }
                 }}
               >
@@ -380,101 +373,91 @@ export default function Index() {
           })}
         </View>
       </View>
-      <Portal>
-        <Modal
-          visible={modalVisible}
-          onDismiss={() => setModalVisible(false)}
-          contentContainerStyle={{
-            flex: 1,
-            backgroundColor: theme.colors.background,
-            padding: 16,
+      <View style={{ flex: 1 }} {...panResponder.panHandlers}>
+        <Text
+          variant="headlineMedium"
+          style={{ marginBottom: 4, textAlign: 'center' }}
+        >
+          {displayDate}
+        </Text>
+        <Text style={{ marginBottom: 16, textAlign: 'center' }}>
+          Gewicht: {weight ? `${weight} kg` : '--'}
+        </Text>
+        <View style={{ marginHorizontal: 16, marginBottom: 16 }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              marginBottom: 4,
+            }}
+          >
+            <Text>Grundumsatz</Text>
+            <Text style={{ textAlign: 'right' }}>{bmr} kcal</Text>
+          </View>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              marginBottom: 4,
+            }}
+          >
+            <Text>Gesamt</Text>
+            <Text style={{ textAlign: 'right' }}>{total} kcal</Text>
+          </View>
+          <Divider style={{ marginVertical: 4 }} />
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              marginBottom: 4,
+            }}
+          >
+            <Text>Differenz</Text>
+            <Text style={{ textAlign: 'right' }}>{total - bmr} kcal</Text>
+          </View>
+        </View>
+        <ScrollView style={{ flex: 1 }}>
+          {mealOrder.map((mt) => (
+            <List.Section key={mt}>
+              <List.Subheader>
+                {mealLabels[mt]} ({groupTotals[mt]} kcal)
+              </List.Subheader>
+              {grouped[mt].map((item) => {
+                const idx = entries.indexOf(item);
+                return renderEntry(item, idx);
+              })}
+            </List.Section>
+          ))}
+        </ScrollView>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            marginTop: 16,
+            marginHorizontal: 16,
           }}
         >
-          <View style={{ flex: 1 }} {...panResponder.panHandlers}>
-            <Text
-              variant="headlineMedium"
-              style={{ marginBottom: 4, textAlign: 'center' }}
-            >
-              {displayDate}
-            </Text>
-            <Text style={{ marginBottom: 16, textAlign: 'center' }}>
-              Gewicht: {weight ? `${weight} kg` : '--'}
-            </Text>
-            <View style={{ marginHorizontal: 16, marginBottom: 16 }}>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  marginBottom: 4,
-                }}
-              >
-                <Text>Grundumsatz</Text>
-                <Text style={{ textAlign: 'right' }}>{bmr} kcal</Text>
-              </View>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  marginBottom: 4,
-                }}
-              >
-                <Text>Gesamt</Text>
-                <Text style={{ textAlign: 'right' }}>{total} kcal</Text>
-              </View>
-              <Divider style={{ marginVertical: 4 }} />
-              <View
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  marginBottom: 4,
-                }}
-              >
-                <Text>Differenz</Text>
-                <Text style={{ textAlign: 'right' }}>{total - bmr} kcal</Text>
-              </View>
-            </View>
-            <ScrollView style={{ flex: 1 }}>
-              {mealOrder.map((mt) => (
-                <List.Section key={mt}>
-                  <List.Subheader>
-                    {mealLabels[mt]} ({groupTotals[mt]} kcal)
-                  </List.Subheader>
-                  {grouped[mt].map((item) => {
-                    const idx = entries.indexOf(item);
-                    return renderEntry(item, idx);
-                  })}
-                </List.Section>
-              ))}
-            </ScrollView>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                marginTop: 16,
-                marginHorizontal: 16,
-              }}
-            >
-              <IconButton
-                icon="scale-bathroom"
-                mode="contained-tonal"
-                iconColor={theme.colors.primary}
-                onPress={() => {
-                  setWeightInput(weight);
-                  setWeightDialog(true);
-                }}
-              />
-              <IconButton
-                icon="plus"
-                mode="contained-tonal"
-                iconColor={theme.colors.primary}
-                onPress={() => {
-                  setMealType('snack');
-                  setAddDialog(true);
-                }}
-              />
-            </View>
-          </View>
-        </Modal>
+          <IconButton
+            icon="scale-bathroom"
+            mode="contained-tonal"
+            iconColor={theme.colors.primary}
+            onPress={() => {
+              setWeightInput(weight);
+              setWeightDialog(true);
+            }}
+          />
+          <IconButton
+            icon="plus"
+            mode="contained-tonal"
+            iconColor={theme.colors.primary}
+            onPress={() => {
+              setMealType('snack');
+              setAddDialog(true);
+            }}
+          />
+        </View>
+      </View>
+      <Portal>
         <Modal
           visible={addDialog}
           onDismiss={() => setAddDialog(false)}
