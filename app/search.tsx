@@ -4,12 +4,12 @@ import { Button, Dialog, List, Portal, TextInput, useTheme } from 'react-native-
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { searchProducts, calculateKcal, Product } from '@/lib/off';
 import { addEntry } from '@/lib/storage';
+import { formatDate } from '@/lib/date';
 
 export default function Search() {
   const router = useRouter();
   const { date, meal } = useLocalSearchParams<{ date?: string; meal?: string }>();
-  const entryDate =
-    typeof date === 'string' ? date : new Date().toISOString().slice(0, 10);
+  const entryDate = typeof date === 'string' ? date : formatDate(new Date());
   const mealType =
     meal === 'breakfast' || meal === 'lunch' || meal === 'dinner' || meal === 'snack'
       ? meal
