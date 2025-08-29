@@ -2,7 +2,7 @@ import React from 'react';
 import { View, TouchableOpacity } from 'react-native';
 import { IconButton, Text, useTheme } from 'react-native-paper';
 import { useRouter } from 'expo-router';
-import { getEntries } from '@/lib/storage';
+import { getEntries, getWeightFor } from '@/lib/storage';
 
 export default function Index() {
   const router = useRouter();
@@ -11,7 +11,7 @@ export default function Index() {
     const d = new Date();
     return new Date(d.getFullYear(), d.getMonth(), 1);
     });
-  const [daysWithEntries, setDaysWithEntries] = React.useState<Record<string, boolean>>({});
+  const [markedDays, setMarkedDays] = React.useState<Record<string, boolean>>({});
 
   React.useEffect(() => {
     (async () => {
@@ -22,11 +22,12 @@ export default function Index() {
       for (let d = 1; d <= daysInMonth; d++) {
         const dateStr = new Date(year, month, d).toISOString().slice(0, 10);
         const e = await getEntries(dateStr);
-        if (e.length > 0) {
+        const w = await getWeightFor(dateStr);
+        if (e.length > 0 || w != null) {
           record[dateStr] = true;
         }
       }
-      setDaysWithEntries(record);
+      setMarkedDays(record);
     })();
   }, [currentMonth]);
 
@@ -46,6 +47,7 @@ export default function Index() {
   const days: (number | null)[] = [];
   for (let i = 0; i < firstWeekday; i++) days.push(null);
   for (let d = 1; d <= daysInMonth; d++) days.push(d);
+  const todayStr = new Date().toISOString().slice(0, 10);
 
   return (
     <View
@@ -95,7 +97,8 @@ export default function Index() {
           const dateStr = d
             ? new Date(year, month, d).toISOString().slice(0, 10)
             : '';
-          const hasEntries = d && daysWithEntries[dateStr];
+          const hasData = d && markedDays[dateStr];
+          const isToday = d && dateStr === todayStr;
           return (
             <TouchableOpacity
               key={idx}
@@ -112,11 +115,22 @@ export default function Index() {
                   borderRadius: 16,
                   alignItems: 'center',
                   justifyContent: 'center',
-                  borderWidth: hasEntries ? 1 : 0,
+                  borderWidth: hasData ? 1 : 0,
                   borderColor: theme.colors.primary,
+                  backgroundColor: isToday
+                    ? theme.colors.primary
+                    : undefined,
                 }}
               >
-                <Text style={{ color: theme.colors.onBackground }}>{d ?? ''}</Text>
+                <Text
+                  style={{
+                    color: isToday
+                      ? theme.colors.onPrimary
+                      : theme.colors.onBackground,
+                  }}
+                >
+                  {d ?? ''}
+                </Text>
               </View>
             </TouchableOpacity>
           );

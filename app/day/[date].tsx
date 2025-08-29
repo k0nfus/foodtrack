@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ScrollView, PanResponder } from 'react-native';
+import { View, ScrollView, PanResponder, Animated, Dimensions } from 'react-native';
 import {
   Button,
   IconButton,
@@ -46,6 +46,8 @@ export default function DayView() {
   const [mealType, setMealType] = React.useState<
     'breakfast' | 'lunch' | 'dinner' | 'snack'
   >('snack');
+  const slide = React.useRef(new Animated.Value(0)).current;
+  const screenWidth = Dimensions.get('window').width;
 
   React.useEffect(() => {
     if (typeof dateParam === 'string') {
@@ -103,6 +105,25 @@ export default function DayView() {
     [selectedDate],
   );
 
+  const animateChangeDate = React.useCallback(
+    (delta: number) => {
+      Animated.timing(slide, {
+        toValue: -delta * screenWidth,
+        duration: 200,
+        useNativeDriver: true,
+      }).start(() => {
+        changeDate(delta);
+        slide.setValue(delta * screenWidth);
+        Animated.timing(slide, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }).start();
+      });
+    },
+    [changeDate, screenWidth, slide],
+  );
+
   const panResponder = React.useMemo(
     () =>
       PanResponder.create({
@@ -110,11 +131,11 @@ export default function DayView() {
           Math.abs(gesture.dx) > Math.abs(gesture.dy) &&
           Math.abs(gesture.dx) > 10,
         onPanResponderRelease: (_, gesture) => {
-          if (gesture.dx > 50) changeDate(-1);
-          else if (gesture.dx < -50) changeDate(1);
+          if (gesture.dx > 50) animateChangeDate(-1);
+          else if (gesture.dx < -50) animateChangeDate(1);
         },
       }),
-    [changeDate],
+    [animateChangeDate],
   );
 
   const mealLabels = {
@@ -157,13 +178,25 @@ export default function DayView() {
       style={{ flex: 1, padding: 16, backgroundColor: theme.colors.background }}
     >
       <IconButton icon="arrow-left" onPress={() => router.back()} />
-      <View style={{ flex: 1 }} {...panResponder.panHandlers}>
-        <Text
-          variant="headlineMedium"
-          style={{ marginBottom: 4, textAlign: 'center' }}
-        >
-          {displayDate}
-        </Text>
+      <Animated.View
+        style={{ flex: 1, transform: [{ translateX: slide }] }}
+        {...panResponder.panHandlers}
+      >
+        <View style={{ alignItems: 'center', marginBottom: 4 }}>
+          <Text
+            variant="headlineMedium"
+            style={{
+              textAlign: 'center',
+              backgroundColor: theme.colors.primary,
+              color: theme.colors.onPrimary,
+              paddingHorizontal: 12,
+              paddingVertical: 6,
+              borderRadius: 12,
+            }}
+          >
+            {displayDate}
+          </Text>
+        </View>
         <Text style={{ marginBottom: 16, textAlign: 'center' }}>
           Gewicht: {weight ? `${weight} kg` : '--'}
         </Text>
@@ -256,7 +289,7 @@ export default function DayView() {
             }}
           />
         </View>
-      </View>
+      </Animated.View>
       <Portal>
         <Dialog visible={weightDialog} onDismiss={() => setWeightDialog(false)}>
           <Dialog.Title>Gewicht aktualisieren</Dialog.Title>
