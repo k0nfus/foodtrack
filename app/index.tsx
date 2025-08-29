@@ -2,7 +2,8 @@ import React from 'react';
 import { View, TouchableOpacity } from 'react-native';
 import { IconButton, Text, useTheme } from 'react-native-paper';
 import { useRouter } from 'expo-router';
-import { getEntries, getWeightFor } from '@/lib/storage';
+import { getEntries, hasWeight } from '@/lib/storage';
+import { formatDate } from '@/lib/date';
 
 export default function Index() {
   const router = useRouter();
@@ -20,10 +21,10 @@ export default function Index() {
       const month = currentMonth.getMonth();
       const daysInMonth = new Date(year, month + 1, 0).getDate();
       for (let d = 1; d <= daysInMonth; d++) {
-        const dateStr = new Date(year, month, d).toISOString().slice(0, 10);
+        const dateStr = formatDate(new Date(year, month, d));
         const e = await getEntries(dateStr);
-        const w = await getWeightFor(dateStr);
-        if (e.length > 0 || w != null) {
+        const w = await hasWeight(dateStr);
+        if (e.length > 0 || w) {
           record[dateStr] = true;
         }
       }
@@ -47,7 +48,7 @@ export default function Index() {
   const days: (number | null)[] = [];
   for (let i = 0; i < firstWeekday; i++) days.push(null);
   for (let d = 1; d <= daysInMonth; d++) days.push(d);
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr = formatDate(new Date());
 
   return (
     <View
@@ -94,9 +95,7 @@ export default function Index() {
       </View>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
         {days.map((d, idx) => {
-          const dateStr = d
-            ? new Date(year, month, d).toISOString().slice(0, 10)
-            : '';
+          const dateStr = d ? formatDate(new Date(year, month, d)) : '';
           const hasData = d && markedDays[dateStr];
           const isToday = d && dateStr === todayStr;
           return (

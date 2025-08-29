@@ -24,6 +24,7 @@ import {
 } from '@/lib/storage';
 import { calculateBMR } from '@/lib/bmr';
 import { FoodEntry } from '@/types';
+import { formatDate } from '@/lib/date';
 
 export default function DayView() {
   const router = useRouter();
@@ -31,7 +32,7 @@ export default function DayView() {
   const initialDate =
     typeof dateParam === 'string'
       ? dateParam
-      : new Date().toISOString().slice(0, 10);
+      : formatDate(new Date());
   const theme = useTheme();
   const [selectedDate, setSelectedDate] = React.useState(initialDate);
   const [entries, setEntries] = React.useState<FoodEntry[]>([]);
@@ -100,7 +101,7 @@ export default function DayView() {
     (delta: number) => {
       const d = new Date(selectedDate);
       d.setDate(d.getDate() + delta);
-      setSelectedDate(d.toISOString().slice(0, 10));
+      setSelectedDate(formatDate(d));
     },
     [selectedDate],
   );

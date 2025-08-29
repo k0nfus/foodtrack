@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { formatDate } from './date';
 
 export interface Profile {
   name: string;
@@ -52,7 +53,7 @@ export async function addEntry(entry: FoodEntry): Promise<void> {
 export async function updateEntry(
   date: string,
   idx: number,
-  entry: FoodEntry,
+  entry: Partial<FoodEntry>,
 ): Promise<void> {
   const entries = await getAllEntries();
   let count = -1;
@@ -60,7 +61,7 @@ export async function updateEntry(
     if (entries[i].date === date) {
       count++;
       if (count === idx) {
-        entries[i] = entry;
+        entries[i] = { ...entries[i], ...entry };
         break;
       }
     }
@@ -115,7 +116,7 @@ export async function getWeightFor(date: string): Promise<number | null> {
   let d = new Date(date);
   while (true) {
     d.setDate(d.getDate() - 1);
-    const key = d.toISOString().slice(0, 10);
+    const key = formatDate(d);
     if (weights[key] != null) {
       return weights[key];
     }
@@ -125,4 +126,9 @@ export async function getWeightFor(date: string): Promise<number | null> {
   }
   const profile = await getProfile();
   return profile ? profile.weightKgInitial : null;
+}
+
+export async function hasWeight(date: string): Promise<boolean> {
+  const weights = await getAllWeights();
+  return weights[date] != null;
 }

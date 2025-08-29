@@ -3,6 +3,7 @@ import { ScrollView } from 'react-native';
 import { Button, TextInput, useTheme, Menu } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { saveProfile, setWeight } from '@/lib/storage';
+import { formatDate } from '@/lib/date';
 
 export default function Onboarding() {
   const router = useRouter();
@@ -35,7 +36,7 @@ export default function Onboarding() {
     await saveProfile(profile);
     const w = parseFloat(weight);
     if (!isNaN(w)) {
-      const today = new Date().toISOString().slice(0, 10);
+      const today = formatDate(new Date());
       await setWeight(today, w);
     }
     router.replace('/');
