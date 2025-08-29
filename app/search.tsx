@@ -38,7 +38,7 @@ export default function Search() {
       mealType,
     });
     setSelected(null);
-    router.replace({ pathname: '/day/[date]', params: { date: entryDate } });
+    router.back();
   }
 
   return (
