@@ -10,7 +10,7 @@ import {
   TextInput,
   Divider,
   useTheme,
-  SegmentedButtons,
+  RadioButton,
 } from 'react-native-paper';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import {
@@ -238,7 +238,10 @@ export default function DayView() {
           {mealOrder.map((mt) => (
             <List.Section key={mt}>
               <List.Subheader>
-                {mealLabels[mt]} ({groupTotals[mt]} kcal)
+                <Text style={{ color: theme.colors.primary }}>
+                  {mealLabels[mt]}
+                </Text>
+                {` (${groupTotals[mt]} kcal)`}
               </List.Subheader>
               {grouped[mt].map((item) => {
                 const idx = entries.indexOf(item);
@@ -325,20 +328,26 @@ export default function DayView() {
         <Dialog visible={mealDialog} onDismiss={() => setMealDialog(false)}>
           <Dialog.Title>Mahlzeit wählen</Dialog.Title>
           <Dialog.Content>
-            <SegmentedButtons
+            <RadioButton.Group
               value={mealType}
               onValueChange={(v) =>
                 setMealType(
                   v as 'breakfast' | 'lunch' | 'dinner' | 'snack',
                 )
               }
-              buttons={[
-                { value: 'breakfast', label: 'Frühstück' },
-                { value: 'lunch', label: 'Mittagessen' },
-                { value: 'dinner', label: 'Abendessen' },
-                { value: 'snack', label: 'Snack' },
-              ]}
-            />
+            >
+              {mealOrder.map((mt) => (
+                <RadioButton.Item
+                  key={mt}
+                  value={mt}
+                  label={mealLabels[mt]}
+                  labelStyle={{
+                    color:
+                      mealType === mt ? theme.colors.primary : undefined,
+                  }}
+                />
+              ))}
+            </RadioButton.Group>
           </Dialog.Content>
           <Dialog.Actions>
             <Button onPress={() => setMealDialog(false)}>Abbrechen</Button>
