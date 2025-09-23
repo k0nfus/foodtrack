@@ -189,10 +189,12 @@ export default function DayView() {
             style={{
               textAlign: 'center',
               backgroundColor: theme.colors.primary,
-              color: theme.colors.onPrimary,
+              color: '#fff',
               paddingHorizontal: 12,
               paddingVertical: 6,
               borderRadius: 12,
+              fontSize:
+                (theme.fonts.headlineMedium?.fontSize ?? 28) + 2,
             }}
           >
             {displayDate}
@@ -326,7 +328,9 @@ export default function DayView() {
           </Dialog.Actions>
         </Dialog>
         <Dialog visible={mealDialog} onDismiss={() => setMealDialog(false)}>
-          <Dialog.Title>Mahlzeit wählen</Dialog.Title>
+          <Dialog.Title style={{ textAlign: 'center' }}>
+            Mahlzeit wählen
+          </Dialog.Title>
           <Dialog.Content>
             <RadioButton.Group
               value={mealType}
@@ -343,7 +347,7 @@ export default function DayView() {
                   label={mealLabels[mt]}
                   labelStyle={{
                     color:
-                      mealType === mt ? theme.colors.primary : undefined,
+                      mealType === mt ? theme.colors.primary : '#fff',
                   }}
                 />
               ))}
